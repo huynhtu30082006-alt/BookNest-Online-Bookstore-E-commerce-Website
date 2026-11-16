@@ -1,0 +1,34 @@
+/* Minimal styles for the customer-flow views (cart, checkout, account, orders).
+   The UI owner may restyle or replace this file. */
+:root {
+    --bn-brown: #7a4a21;
+    --bn-brown-dark: #5c3516;
+    --bn-cream: #fbf6ee;
+    --bn-accent: #d9822b;
+}
+body { background: var(--bn-cream); color: #2b2118; }
+.navbar-booknest { background: var(--bn-brown); }
+.navbar-booknest .navbar-brand, .navbar-booknest .nav-link { color: #fff; }
+.navbar-booknest .nav-link:hover { color: #ffd9a8; }
+.btn-bn { background: var(--bn-accent); border-color: var(--bn-accent); color: #fff; }
+.btn-bn:hover, .btn-bn:focus { background: #bf6f1f; border-color: #bf6f1f; color: #fff; }
+.btn-outline-bn { border-color: var(--bn-brown); color: var(--bn-brown); }
+.btn-outline-bn:hover { background: var(--bn-brown); color: #fff; }
+.text-bn { color: var(--bn-brown); }
+.card { border-color: #eadfce; }
+.book-cover {
+    aspect-ratio: 3 / 4; background: linear-gradient(135deg, #e9d5b7, #d3b88d);
+    display: flex; align-items: center; justify-content: center; font-size: 3rem; overflow: hidden;
+}
+.book-cover img { width: 100%; height: 100%; object-fit: cover; }
+.cart-thumb { width: 56px; height: 76px; flex: none; border-radius: .25rem; font-size: 1.5rem; }
+.price-member { color: #b3440f; font-weight: 600; }
+.price-guest-struck { color: #8a7f73; text-decoration: line-through; font-size: .875rem; }
+.qty-input { width: 76px; }
+.summary-card { position: sticky; top: 1rem; }
+.status-timeline { display: flex; gap: .5rem; flex-wrap: wrap; }
+.status-step { flex: 1 1 110px; text-align: center; padding: .5rem; border-radius: .5rem; background: #efe6d8; color: #8a7f73; font-size: .875rem; }
+.status-step.done { background: #d6ecd2; color: #1f5a1b; font-weight: 600; }
+.status-step.current { background: var(--bn-accent); color: #fff; font-weight: 700; }
+#toast-area { position: fixed; top: 1rem; right: 1rem; z-index: 2000; width: min(360px, calc(100vw - 2rem)); }
+@media (max-width: 575.98px) { .summary-card { position: static; } }
