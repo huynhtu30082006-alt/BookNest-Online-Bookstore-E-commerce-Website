@@ -8,6 +8,14 @@ use App\Http\Controllers\CouponController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
+
+// Admin Controllers
+use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\CouponController as AdminCouponController;
+use App\Http\Controllers\Admin\CustomerController as AdminCustomerController;
+
 use Illuminate\Support\Facades\Route;
 
 // Storefront (placeholder until the product-browsing pages are merged)
@@ -47,3 +55,12 @@ Route::post('/orders/track', [OrderController::class, 'track'])->middleware('thr
 Route::get('/orders/{order}/confirmation', [OrderController::class, 'confirmation'])->whereNumber('order')->name('orders.confirmation');
 Route::get('/orders/{order}', [OrderController::class, 'show'])->whereNumber('order')->name('orders.show');
 Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->whereNumber('order')->name('orders.cancel');
+
+// ADMIN MANAGEMENT MODULES
+Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
+    Route::resource('categories', CategoryController::class);
+    Route::resource('products', ProductController::class);
+    Route::resource('orders', AdminOrderController::class);
+    Route::resource('coupons', AdminCouponController::class);
+    Route::resource('customers', AdminCustomerController::class);
+});
