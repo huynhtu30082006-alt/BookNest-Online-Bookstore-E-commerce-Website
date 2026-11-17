@@ -57,10 +57,14 @@ Route::get('/orders/{order}', [OrderController::class, 'show'])->whereNumber('or
 Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->whereNumber('order')->name('orders.cancel');
 
 // ADMIN MANAGEMENT MODULES
-Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
-    Route::resource('categories', CategoryController::class);
-    Route::resource('products', ProductController::class);
-    Route::resource('orders', AdminOrderController::class);
-    Route::resource('coupons', AdminCouponController::class);
-    Route::resource('customers', AdminCustomerController::class);
-});
+Route::prefix('admin')
+    ->name('admin.')
+    ->middleware(['auth', 'admin'])
+    ->group(function () {
+        Route::resource('categories', CategoryController::class);
+        Route::resource('products', ProductController::class);
+        Route::resource('orders', AdminOrderController::class);
+        Route::resource('coupons', AdminCouponController::class);
+        Route::resource('customers', AdminCustomerController::class);
+    });
+
