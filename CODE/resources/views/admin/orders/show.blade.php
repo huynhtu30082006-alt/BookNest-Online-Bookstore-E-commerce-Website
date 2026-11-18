@@ -50,10 +50,10 @@
                 @method('PUT')
                 <label for="status" class="block text-gray-700 text-sm font-bold">Update Status:</label>
                 <select name="status" id="status" class="shadow border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                    <option value="pending" {{ $order->status === 'pending' ? 'selected' : '' }}>Pending</option>
-                    <option value="processing" {{ $order->status === 'processing' ? 'selected' : '' }}>Processing</option>
-                    <option value="completed" {{ $order->status === 'completed' ? 'selected' : '' }}>Completed</option>
-                    <option value="cancelled" {{ $order->status === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                    <option value="pending" {{ strtolower($order->status) === 'pending' ? 'selected' : '' }}>Pending</option>
+                    <option value="processing" {{ strtolower($order->status) === 'processing' ? 'selected' : '' }}>Processing</option>
+                    <option value="completed" {{ strtolower($order->status) === 'completed' ? 'selected' : '' }}>Completed</option>
+                    <option value="cancelled" {{ strtolower($order->status) === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                 </select>
                 <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm">Update Status</button>
             </form>

@@ -4,10 +4,15 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Services\OrderService;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
+    public function __construct(
+        private OrderService $orderService
+    ) {}
+
     /**
      * Display a listing of the orders with search and pagination.
      */
@@ -47,10 +52,25 @@ class OrderController extends Controller
     public function update(Request $request, Order $order)
     {
         $validated = $request->validate([
-            'status' => 'required|string|in:pending,processing,completed,cancelled',
+            'status' => 'required|string|in:Pending,Processing,Completed,Cancelled,pending,processing,completed,cancelled',
         ]);
 
-        $order->update($validated);
+        $newStatus = ucfirst(strtolower($validated['status']));
+
+        if ($newStatus === Order::STATUS_CANCELLED) {
+            try {
+                if ($order->isCancellable()) {
+                    $this->orderService->cancel($order);
+                } else {
+                    $order->update(['status' => $newStatus]);
+                }
+            } catch (\Exception $e) {
+                return redirect()->route('admin.orders.index')
+                    ->with('error', $e->getMessage());
+            }
+        } else {
+            $order->update(['status' => $newStatus]);
+        }
 
         return redirect()->route('admin.orders.index')
             ->with('success', 'Order status updated successfully.');
