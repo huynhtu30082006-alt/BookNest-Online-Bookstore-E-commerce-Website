@@ -61,6 +61,7 @@ class OrderService
                 'subtotal' => $summary->subtotal,
                 'discount' => $summary->discount,
                 'delivery_fee' => $summary->deliveryFee,
+                'total_amount' => $summary->total,
                 'status' => Order::STATUS_PENDING,
                 'payment_method' => $paymentMethod,
                 'payment_status' => $this->payment->charge($paymentMethod, $summary->total),

@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable([
     'user_id', 'coupon_id',
     'guest_name', 'guest_email', 'guest_phone', 'guest_address',
-    'subtotal', 'discount', 'delivery_fee',
+    'subtotal', 'discount', 'delivery_fee', 
     'status', 'payment_method', 'payment_status',
 ])]
 class Order extends Model
