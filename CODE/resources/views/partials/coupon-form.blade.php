@@ -1,12 +1,12 @@
 {{-- Coupon box (members only). Works without JavaScript; with JavaScript it is applied via AJAX. --}}
-<div class="mb-3" data-coupon-box>
-    <label for="coupon-code" class="form-label fw-semibold">Discount code</label>
+<div class="coupon-box mb-3" data-coupon-box>
+    <label for="coupon-code" class="form-label fw-semibold">A little extra savings</label>
 
     @auth
         <form method="POST" action="{{ route('coupon.apply') }}" data-coupon-form
               class="input-group {{ $summary->coupon ? 'd-none' : '' }}">
             @csrf
-            <input type="text" name="code" id="coupon-code" class="form-control" placeholder="Enter code" maxlength="50" autocomplete="off">
+            <input type="text" name="code" id="coupon-code" class="form-control" placeholder="Enter a discount code" maxlength="50" autocomplete="off">
             <button class="btn btn-outline-bn" type="submit">Apply</button>
         </form>
 

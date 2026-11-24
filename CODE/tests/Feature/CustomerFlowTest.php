@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Category;
 use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Product;
@@ -215,6 +216,33 @@ class CustomerFlowTest extends TestCase
             $this->markTestSkipped('The git command is not available.');
         }
         $this->assertSame([], $output, 'These files must never be committed: '.implode(', ', array_slice($output, 0, 5)));
+    }
+
+    // =====================================================================
+    // Storefront
+    // =====================================================================
+
+    public function test_storefront_searches_filters_and_sorts_books(): void
+    {
+        $category = Category::factory()->create(['name' => 'Literature']);
+        $cheaperBook = Product::factory()->for($category)->create([
+            'name' => 'Amber Tale',
+            'author' => 'Bookish Writer',
+            'guest_price' => 100000,
+        ]);
+        $pricierBook = Product::factory()->for($category)->create([
+            'name' => 'Zebra Book',
+            'author' => 'Another Writer',
+            'guest_price' => 200000,
+        ]);
+        $otherCategoryBook = Product::factory()->create(['name' => 'Book Outside']);
+
+        $this->get(route('home', ['search' => 'Book', 'category' => $category->slug, 'sort' => 'price_asc']))
+            ->assertOk()
+            ->assertSeeInOrder([$cheaperBook->name, $pricierBook->name])
+            ->assertDontSee($otherCategoryBook->name)
+            ->assertSee('Guest price')
+            ->assertSee('Member price');
     }
 
     // =====================================================================
