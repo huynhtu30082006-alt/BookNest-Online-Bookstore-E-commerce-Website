@@ -241,8 +241,55 @@ class CustomerFlowTest extends TestCase
             ->assertOk()
             ->assertSeeInOrder([$cheaperBook->name, $pricierBook->name])
             ->assertDontSee($otherCategoryBook->name)
-            ->assertSee('Guest price')
-            ->assertSee('Member price');
+            ->assertSee('Giá khách')
+            ->assertSee('Giá thành viên');
+    }
+
+    public function test_storefront_product_detail_is_available_for_active_books_only(): void
+    {
+        $product = $this->book(['name' => 'The BookNest Detail']);
+
+        $this->get(route('products.show', $product))
+            ->assertOk()
+            ->assertSee('The BookNest Detail')
+            ->assertSee('Giá thành viên')
+            ->assertSee('Giá khách')
+            ->assertSee('Mua ngay');
+
+        $this->post(route('cart.add', $product), ['quantity' => 1, 'buy_now' => 1])
+            ->assertRedirect(route('checkout.show'));
+
+        $product->update(['status' => 'inactive']);
+        $this->get(route('products.show', $product))->assertNotFound();
+    }
+
+    public function test_storefront_paginates_eight_books_and_preserves_filters(): void
+    {
+        $category = Category::factory()->create();
+        foreach (range(1, 10) as $number) {
+            $this->book([
+                'category_id' => $category->id,
+                'name' => sprintf('Pagination Book %02d', $number),
+            ]);
+        }
+
+        $filters = ['search' => 'Pagination', 'category' => $category->slug, 'sort' => 'name_asc'];
+        $this->get(route('home', $filters))
+            ->assertOk()
+            ->assertSee('Showing 1–8 of 10 books')
+            ->assertSeeInOrder(['Pagination Book 01', 'Pagination Book 08'])
+            ->assertDontSee('Pagination Book 09')
+            ->assertSee('search=Pagination')
+            ->assertSee('category='.$category->slug)
+            ->assertSee('sort=name_asc')
+            ->assertSee('page=2');
+
+        $this->get(route('home', $filters + ['page' => 2]))
+            ->assertOk()
+            ->assertSee('Showing 9–10 of 10 books')
+            ->assertSee('Pagination Book 09')
+            ->assertSee('Pagination Book 10')
+            ->assertDontSee('Pagination Book 01');
     }
 
     // =====================================================================

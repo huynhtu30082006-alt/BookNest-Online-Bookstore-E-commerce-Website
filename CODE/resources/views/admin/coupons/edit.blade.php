@@ -6,11 +6,11 @@
     <title>Edit Coupon - BookNest Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+<body class="bg-[#F4F7FA] font-sans leading-normal tracking-normal">
     <div class="container mx-auto px-4 py-8 max-w-xl">
         <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold text-gray-800">Edit Coupon</h1>
-            <a href="{{ route('admin.coupons.index') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Back</a>
+            <h1 class="text-2xl font-bold text-[#0F172A]">Edit Coupon</h1>
+            <a href="{{ route('admin.coupons.index') }}" class="bg-[#64748B] hover:bg-[#334155] text-white font-bold py-2 px-4 rounded">Back</a>
         </div>
 
         @if ($errors->any())
@@ -29,23 +29,23 @@
                 @method('PUT')
 
                 <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="code">Coupon Code</label>
-                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 uppercase" id="code" type="text" name="code" value="{{ old('code', $coupon->code) }}" required>
+                    <label class="block text-[#334155] text-sm font-bold mb-2" for="code">Coupon Code</label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-[#334155] uppercase" id="code" type="text" name="code" value="{{ old('code', $coupon->code) }}" required>
                 </div>
                 <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="discount_value">Discount Value (VNĐ)</label>
-                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700" id="discount_value" type="number" name="discount_value" value="{{ old('discount_value', $coupon->discount_value) }}" required>
+                    <label class="block text-[#334155] text-sm font-bold mb-2" for="discount_value">Discount Value (VNĐ)</label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-[#334155]" id="discount_value" type="number" name="discount_value" value="{{ old('discount_value', $coupon->discount_value) }}" required>
                 </div>
                 <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2" for="min_order_value">Min Order Value (VNĐ)</label>
-                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700" id="min_order_value" type="number" name="min_order_value" value="{{ old('min_order_value', $coupon->min_order_value) }}">
+                    <label class="block text-[#334155] text-sm font-bold mb-2" for="min_order_value">Min Order Value (VNĐ)</label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-[#334155]" id="min_order_value" type="number" name="min_order_value" value="{{ old('min_order_value', $coupon->min_order_value) }}">
                 </div>
                 <div class="mb-6 flex items-center">
                     <input type="checkbox" id="is_active" name="is_active" value="1" {{ old('is_active', $coupon->is_active) ? 'checked' : '' }} class="mr-2">
-                    <label class="text-gray-700 text-sm font-bold" for="is_active">Active Status</label>
+                    <label class="text-[#334155] text-sm font-bold" for="is_active">Active Status</label>
                 </div>
                 <div class="flex items-center justify-between">
-                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" type="submit">Update Coupon</button>
+                    <button class="bg-[#0284C7] hover:bg-[#0369A1] text-white font-bold py-2 px-4 rounded" type="submit">Update Coupon</button>
                 </div>
             </form>
         </div>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -14,58 +14,59 @@
 <body class="d-flex flex-column min-vh-100">
 <div class="store-note">
     <div class="container d-flex justify-content-center align-items-center gap-2">
-        <span aria-hidden="true">✦</span> A good book makes every day a little brighter.
+        <span aria-hidden="true">✦</span> Ưu đãi thành viên BookNest — giá tốt hơn cho mỗi cuốn sách.
     </div>
 </div>
-<nav class="navbar navbar-expand-lg navbar-booknest navbar-dark">
-    <div class="container">
+<header class="store-header">
+    <nav class="navbar navbar-booknest">
+        <div class="container header-main">
         <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="{{ route('home') }}">
             <span class="brand-mark" aria-hidden="true">B</span>
-            <span>BookNest<small class="brand-tagline d-block">Your cozy book corner</small></span>
+            <span>BookNest<small class="brand-tagline d-block">Nhà sách trực tuyến</small></span>
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
-                aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="mainNav">
-            <ul class="navbar-nav me-auto ms-lg-4">
-                <li class="nav-item"><a class="nav-link" href="{{ route('home') }}">Browse books</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ route('orders.track') }}">Track an order</a></li>
-            </ul>
-            <ul class="navbar-nav align-items-md-center gap-md-2">
-                <li class="nav-item">
-                    <a class="nav-link cart-link" href="{{ route('cart.index') }}">
-                        <span aria-hidden="true">🛒</span> Cart
-                        <span id="cart-count" class="badge rounded-pill bg-warning text-dark">{{ app(\App\Services\CartService::class)->count() }}</span>
+        <form class="header-search" method="GET" action="{{ route('home') }}" role="search">
+            <input type="search" name="search" value="{{ request('search') }}" class="form-control"
+                   placeholder="Tìm sách, tác giả..." aria-label="Tìm sách, tác giả">
+            <button type="submit" aria-label="Tìm kiếm"><span aria-hidden="true">⌕</span></button>
+        </form>
+        <div class="header-actions">
+            <a class="header-action cart-link" href="{{ route('cart.index') }}">
+                <span class="header-action-icon" aria-hidden="true">🛒
+                    <span id="cart-count" class="badge rounded-pill bg-bn-accent text-white">{{ app(\App\Services\CartService::class)->count() }}</span>
+                </span>
+                <span class="header-action-label">Giỏ hàng</span>
+            </a>
+            @auth
+                <div class="dropdown">
+                    <a class="header-action dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="header-action-icon" aria-hidden="true">♙</span>
+                        <span class="header-action-label">{{ \Illuminate\Support\Str::limit(auth()->user()->name, 18) }}</span>
                     </a>
-                </li>
-                @auth
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            {{ \Illuminate\Support\Str::limit(auth()->user()->name, 18) }}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{{ route('profile.edit') }}">My profile</a></li>
-                            <li><a class="dropdown-item" href="{{ route('orders.index') }}">My orders</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button class="dropdown-item" type="submit">Log out</button>
-                                </form>
-                            </li>
-                        </ul>
-                    </li>
-                @else
-                    <li class="nav-item"><a class="nav-link" href="{{ route('login') }}">Log in</a></li>
-                    <li class="nav-item ms-lg-2"><a class="btn btn-sm btn-nav-join" href="{{ route('register') }}">Join BookNest</a></li>
-                @endauth
-            </ul>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{{ route('profile.edit') }}">Tài khoản</a></li>
+                        <li><a class="dropdown-item" href="{{ route('orders.index') }}">Đơn hàng</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button class="dropdown-item" type="submit">Đăng xuất</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            @else
+                <div class="account-actions">
+                    <span class="header-action-icon" aria-hidden="true">♙</span>
+                    <span class="header-action-label">Tài khoản</span>
+                    <span class="account-links"><a href="{{ route('login') }}">Đăng nhập</a><span>/</span><a href="{{ route('register') }}">Đăng ký</a></span>
+                </div>
+            @endauth
         </div>
-    </div>
-</nav>
+        </div>
+    </nav>
+</header>
 
-<main class="container py-4 py-lg-5 flex-grow-1">
+<main class="container store-main py-4 py-lg-5 flex-grow-1">
     @include('partials.flash')
     @yield('content')
 </main>
@@ -75,13 +76,13 @@
         <div class="row gy-4 align-items-center">
             <div class="col-md-7">
                 <a class="footer-brand" href="{{ route('home') }}">BookNest</a>
-                <p class="mb-0 mt-2">Thoughtfully picked reads, delivered right to your door.</p>
+                <p class="mb-0 mt-2">Sách hay cho mọi hành trình — giao hàng tận nơi.</p>
             </div>
             <div class="col-md-5 text-md-end small">
-                <a href="{{ route('home') }}">Browse books</a>
+                <a href="{{ route('home') }}">Mua sắm</a>
                 <span class="footer-separator">·</span>
-                <a href="{{ route('orders.track') }}">Track your order</a>
-                <div class="mt-2">© {{ date('Y') }} BookNest · Prices in VND · Demo payments</div>
+                <a href="{{ route('orders.track') }}">Tra cứu đơn hàng</a>
+                <div class="mt-2">© {{ date('Y') }} BookNest · Giá bán bằng VND</div>
             </div>
         </div>
     </div>

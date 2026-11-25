@@ -1,41 +1,34 @@
 @extends('layouts.app')
 
-@section('title', 'Find your next favorite book')
+@section('title', 'Nhà sách BookNest')
 
 @section('content')
-<section class="shop-hero mb-4 mb-lg-5">
+<section class="shop-hero mb-4">
     <div class="shop-hero-content">
-        <span class="eyebrow"><span aria-hidden="true">✦</span> A little escape, one page at a time</span>
-        <h1>Find your next<br class="d-none d-sm-block"> favorite book.</h1>
-        <p>Make room for a new story. Explore a thoughtful collection picked for curious minds.</p>
+        <span class="eyebrow"><span aria-hidden="true">✦</span> Ưu đãi dành riêng cho bạn</span>
+        <h1>Chạm vào tri thức,<br class="d-none d-sm-block"> mở lối tương lai.</h1>
+        <p>Khám phá sách hay, chọn mức giá thành viên và đặt mua dễ dàng tại BookNest.</p>
         <div class="hero-perks">
-            <span><span aria-hidden="true">✓</span> Member-only prices</span>
-            <span><span aria-hidden="true">✓</span> Easy, secure checkout</span>
+            <span><span aria-hidden="true">✓</span> Giá ưu đãi cho thành viên</span>
+            <span><span aria-hidden="true">✓</span> Đặt hàng nhanh chóng, an tâm</span>
         </div>
     </div>
     <div class="hero-art" aria-hidden="true">
         <div class="hero-sun"></div>
         <div class="hero-book hero-book-back"></div>
-        <div class="hero-book hero-book-front"><span>stories<br>to keep</span></div>
+        <div class="hero-book hero-book-front"><span>Sách hay<br>mỗi ngày</span></div>
         <div class="hero-star hero-star-one">✦</div>
         <div class="hero-star hero-star-two">✧</div>
     </div>
 </section>
 
-<section class="book-search-panel mb-4 mb-lg-5" aria-label="Search and filter books">
+<section class="book-search-panel mb-4" aria-label="Tìm kiếm và lọc sách">
     <form method="GET" action="{{ route('home') }}" class="row g-3 align-items-end">
-        <div class="col-12 col-lg-5">
-            <label for="book-search" class="form-label">What would you like to read?</label>
-            <div class="search-input-wrap">
-                <span aria-hidden="true">⌕</span>
-                <input id="book-search" type="search" name="search" value="{{ request('search') }}"
-                       class="form-control search-input" placeholder="Search by title or author...">
-            </div>
-        </div>
-        <div class="col-12 col-sm-6 col-lg-3">
-            <label for="book-category" class="form-label">Browse a shelf</label>
+        <input type="hidden" name="search" value="{{ request('search') }}">
+        <div class="col-12 col-sm-6 col-lg-5">
+            <label for="book-category" class="form-label">Danh mục sách</label>
             <select id="book-category" name="category" class="form-select">
-                <option value="">All categories</option>
+                <option value="">Tất cả danh mục</option>
                 @foreach ($categories as $category)
                     <option value="{{ $category->slug }}" @selected(request('category') === $category->slug)>
                         {{ $category->name }}
@@ -43,19 +36,17 @@
                 @endforeach
             </select>
         </div>
-        <div class="col-12 col-sm-6 col-lg-2">
-            <label for="book-sort" class="form-label">Sort by</label>
+        <div class="col-12 col-sm-6 col-lg-5">
+            <label for="book-sort" class="form-label">Sắp xếp theo</label>
             <select id="book-sort" name="sort" class="form-select">
-                <option value="newest" @selected(request('sort', 'newest') === 'newest')>Newest</option>
-                <option value="price_asc" @selected(request('sort') === 'price_asc')>Price: low to high</option>
-                <option value="price_desc" @selected(request('sort') === 'price_desc')>Price: high to low</option>
-                <option value="name_asc" @selected(request('sort') === 'name_asc')>Name: A to Z</option>
+                <option value="newest" @selected(request('sort', 'newest') === 'newest')>Mới nhất</option>
+                <option value="price_asc" @selected(request('sort') === 'price_asc')>Giá tăng dần</option>
+                <option value="price_desc" @selected(request('sort') === 'price_desc')>Giá giảm dần</option>
+                <option value="name_asc" @selected(request('sort') === 'name_asc')>Tên sách A–Z</option>
             </select>
         </div>
         <div class="col-12 col-lg-2">
-            <button type="submit" class="btn btn-bn search-button w-100">
-                <span aria-hidden="true">⌕</span> Find books
-            </button>
+            <button type="submit" class="btn btn-bn search-button w-100">Lọc sách</button>
         </div>
     </form>
 </section>
@@ -63,49 +54,54 @@
 <section aria-labelledby="book-shelf-heading">
     <div class="shelf-heading d-flex flex-column flex-sm-row justify-content-between align-items-sm-end gap-2 mb-3 mb-lg-4">
         <div>
-            <span class="eyebrow text-bn">The BookNest collection</span>
-            <h2 id="book-shelf-heading" class="h3 mb-0">Books worth getting lost in</h2>
+            <span class="eyebrow text-bn">Khám phá BookNest</span>
+            <h2 id="book-shelf-heading" class="h3 mb-0">Sách nổi bật</h2>
         </div>
-        <p class="small text-muted mb-0">{{ $products->total() }} {{ \Illuminate\Support\Str::plural('book', $products->total()) }} to explore</p>
+        <p class="small text-muted mb-0">{{ $products->total() }} tựa sách</p>
     </div>
 
     @forelse ($products as $product)
         @if ($loop->first)
-            <div class="row row-cols-2 row-cols-lg-3 row-cols-xl-4 g-3 g-lg-4">
+            <div class="row row-cols-2 row-cols-md-3 row-cols-xl-4 g-3 g-lg-4">
         @endif
         <div class="col">
             <article class="card book-card h-100">
-                <div class="book-cover-frame">
+                <a class="book-cover-frame" href="{{ route('products.show', $product) }}" aria-label="Xem {{ $product->name }}">
                     @if ($product->image_url)
-                        <img class="book-cover-image" src="{{ $product->image_url }}" alt="Cover of {{ $product->name }}">
+                        <img class="book-cover-image" src="{{ $product->image_url }}" alt="Bìa sách {{ $product->name }}">
                     @else
-                        <div class="book-cover-placeholder" aria-label="Book cover placeholder">
-                            <span class="cover-kicker">BOOKNEST EDITION</span>
+                        <div class="book-cover-placeholder" aria-label="Ảnh bìa sách">
                             <span class="cover-title">{{ $product->name }}</span>
                             <span class="cover-rule"></span>
                             <span class="cover-author">{{ $product->author }}</span>
                         </div>
                     @endif
-                    <span class="stock-pill {{ $product->stock > 0 ? 'is-available' : 'is-sold-out' }}">
-                        {{ $product->stock > 0 ? 'In stock' : 'Sold out' }}
-                    </span>
-                </div>
+                </a>
                 <div class="card-body d-flex flex-column">
                     <div class="book-category">{{ $product->category?->name }}</div>
-                    <h3 class="book-title">{{ $product->name }}</h3>
-                    <p class="book-author">{{ $product->author }}</p>
+                    <h3 class="book-title"><a href="{{ route('products.show', $product) }}">{{ $product->name }}</a></h3>
+                    <p class="book-author mb-2">{{ $product->author }}</p>
 
                     <div class="book-prices mt-auto">
-                        <div class="book-price-line">
-                            <span>Guest price</span>
+                        <div class="member-price-line">
+                            <span class="price-caption">Giá thành viên</span>
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <strong>{{ \App\Support\Money::vnd($product->member_price) }}</strong>
+                                @if ($product->guest_price > 0 && $product->member_price < $product->guest_price)
+                                    <span class="discount-badge">-{{ (int) floor((1 - $product->member_price / $product->guest_price) * 100) }}%</span>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="guest-price-line">
+                            <span>Giá khách</span>
                             <strong>{{ \App\Support\Money::vnd($product->guest_price) }}</strong>
                         </div>
-                        <div class="book-price-line member-price-line">
-                            <span>Member price</span>
-                            <strong>{{ \App\Support\Money::vnd($product->member_price) }}</strong>
-                        </div>
                     </div>
-                    <div class="mt-3">
+                    <div class="stock-status {{ $product->stock > 0 ? 'is-available' : 'is-sold-out' }}">
+                        <span class="stock-status-dot" aria-hidden="true"></span>
+                        {{ $product->stock > 0 ? 'Còn hàng' : 'Hết hàng' }}
+                    </div>
+                    <div class="mt-2">
                         @include('partials.add-to-cart', ['product' => $product])
                     </div>
                 </div>
@@ -117,14 +113,19 @@
     @empty
         <div class="empty-books text-center py-5 px-3">
             <div class="empty-books-icon" aria-hidden="true">📖</div>
-            <h3 class="h5 mt-3">No books found on this shelf</h3>
-            <p class="text-muted mb-3">Try another title or category to find your next read.</p>
-            <a href="{{ route('home') }}" class="btn btn-outline-bn">See all books</a>
+            <h3 class="h5 mt-3">Chưa tìm thấy sách phù hợp</h3>
+            <p class="text-muted mb-3">Hãy thử tìm kiếm với tên sách hoặc danh mục khác.</p>
+            <a href="{{ route('home') }}" class="btn btn-outline-bn">Xem tất cả sách</a>
         </div>
     @endforelse
 </section>
 
-<div class="mt-4 mt-lg-5">
-    {{ $products->links('pagination::bootstrap-5') }}
-</div>
+@if ($products->total() > 0)
+    <div class="book-pagination mt-4 mt-lg-5">
+        <p class="book-pagination-count small text-muted">
+            Showing {{ $products->firstItem() }}–{{ $products->lastItem() }} of {{ $products->total() }} books
+        </p>
+        {{ $products->links('pagination::bootstrap-5') }}
+    </div>
+@endif
 @endsection

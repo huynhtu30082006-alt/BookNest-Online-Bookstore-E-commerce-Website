@@ -40,6 +40,10 @@ class CartController extends Controller
 
         $message = "\"{$product->name}\" was added to your cart.";
 
+        if ($request->boolean('buy_now') && !$request->expectsJson()) {
+            return redirect()->route('checkout.show')->with('success', $message);
+        }
+
         return $request->expectsJson()
             ? response()->json(['message' => $message] + $this->pricing->summary()->toArray())
             : back()->with('success', $message);

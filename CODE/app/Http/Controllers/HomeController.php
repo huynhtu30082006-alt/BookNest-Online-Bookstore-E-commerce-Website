@@ -36,9 +36,17 @@ class HomeController extends Controller
             default => $query->latest('id'),
         };
 
-        $products = $query->paginate(12)->withQueryString();
+        $products = $query->paginate(8)->withQueryString();
         $categories = Category::query()->where('is_active', true)->orderBy('name')->get();
 
         return view('shop.home', compact('products', 'categories'));
+    }
+
+    public function show(Product $product): View
+    {
+        abort_unless($product->status === Product::STATUS_ACTIVE, 404);
+        $product->load('category');
+
+        return view('shop.show', compact('product'));
     }
 }
