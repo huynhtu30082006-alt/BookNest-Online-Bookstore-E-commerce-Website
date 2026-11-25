@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -14,7 +14,7 @@
 <body class="d-flex flex-column min-vh-100">
 <div class="store-note">
     <div class="container d-flex justify-content-center align-items-center gap-2">
-        <span aria-hidden="true">✦</span> Ưu đãi thành viên BookNest — giá tốt hơn cho mỗi cuốn sách.
+        <span aria-hidden="true">✦</span> BookNest member offers — better prices on every book.
     </div>
 </div>
 <header class="store-header">
@@ -22,19 +22,19 @@
         <div class="container header-main">
         <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="{{ route('home') }}">
             <span class="brand-mark" aria-hidden="true">B</span>
-            <span>BookNest<small class="brand-tagline d-block">Nhà sách trực tuyến</small></span>
+            <span>BookNest<small class="brand-tagline d-block">Your online bookstore</small></span>
         </a>
         <form class="header-search" method="GET" action="{{ route('home') }}" role="search">
             <input type="search" name="search" value="{{ request('search') }}" class="form-control"
-                   placeholder="Tìm sách, tác giả..." aria-label="Tìm sách, tác giả">
-            <button type="submit" aria-label="Tìm kiếm"><span aria-hidden="true">⌕</span></button>
+                   placeholder="Search books, authors..." aria-label="Search books, authors">
+            <button type="submit" aria-label="Search"><span aria-hidden="true">⌕</span></button>
         </form>
         <div class="header-actions">
             <a class="header-action cart-link" href="{{ route('cart.index') }}">
                 <span class="header-action-icon" aria-hidden="true">🛒
                     <span id="cart-count" class="badge rounded-pill bg-bn-accent text-white">{{ app(\App\Services\CartService::class)->count() }}</span>
                 </span>
-                <span class="header-action-label">Giỏ hàng</span>
+                <span class="header-action-label">Cart</span>
             </a>
             @auth
                 <div class="dropdown">
@@ -43,13 +43,13 @@
                         <span class="header-action-label">{{ \Illuminate\Support\Str::limit(auth()->user()->name, 18) }}</span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="{{ route('profile.edit') }}">Tài khoản</a></li>
-                        <li><a class="dropdown-item" href="{{ route('orders.index') }}">Đơn hàng</a></li>
+                        <li><a class="dropdown-item" href="{{ route('profile.edit') }}">My account</a></li>
+                        <li><a class="dropdown-item" href="{{ route('orders.index') }}">My orders</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
-                                <button class="dropdown-item" type="submit">Đăng xuất</button>
+                                <button class="dropdown-item" type="submit">Log out</button>
                             </form>
                         </li>
                     </ul>
@@ -57,8 +57,8 @@
             @else
                 <div class="account-actions">
                     <span class="header-action-icon" aria-hidden="true">♙</span>
-                    <span class="header-action-label">Tài khoản</span>
-                    <span class="account-links"><a href="{{ route('login') }}">Đăng nhập</a><span>/</span><a href="{{ route('register') }}">Đăng ký</a></span>
+                    <span class="header-action-label">Account</span>
+                    <span class="account-links"><a href="{{ route('login') }}">Log in</a><span>/</span><a href="{{ route('register') }}">Register</a></span>
                 </div>
             @endauth
         </div>
@@ -76,13 +76,13 @@
         <div class="row gy-4 align-items-center">
             <div class="col-md-7">
                 <a class="footer-brand" href="{{ route('home') }}">BookNest</a>
-                <p class="mb-0 mt-2">Sách hay cho mọi hành trình — giao hàng tận nơi.</p>
+                <p class="mb-0 mt-2">Great reads for every journey — delivered to your door.</p>
             </div>
             <div class="col-md-5 text-md-end small">
-                <a href="{{ route('home') }}">Mua sắm</a>
+                <a href="{{ route('home') }}">Shop</a>
                 <span class="footer-separator">·</span>
-                <a href="{{ route('orders.track') }}">Tra cứu đơn hàng</a>
-                <div class="mt-2">© {{ date('Y') }} BookNest · Giá bán bằng VND</div>
+                <a href="{{ route('orders.track') }}">Track an order</a>
+                <div class="mt-2">© {{ date('Y') }} BookNest · Prices in VND</div>
             </div>
         </div>
     </div>
