@@ -91,14 +91,21 @@
 
         if (form.matches('[data-add-to-cart]')) {
             e.preventDefault();
-            var btn = form.querySelector('button[type="submit"]');
-            btn.disabled = true;
-            send(form).then(function (data) {
+            var buyNow = e.submitter && e.submitter.matches('[data-buy-now]');
+            var buttons = form.querySelectorAll('button[type="submit"]');
+            Array.prototype.forEach.call(buttons, function (button) { button.disabled = true; });
+            send(form, buyNow ? { buy_now: '1' } : {}).then(function (data) {
                 applySummary(data);
-                toast(data.message, 'success');
+                if (buyNow && form.dataset.checkoutUrl) {
+                    window.location.assign(form.dataset.checkoutUrl);
+                } else {
+                    toast(data.message, 'success');
+                }
             }).catch(function (err) {
                 toast(err.message, 'danger');
-            }).then(function () { btn.disabled = false; });
+            }).then(function () {
+                Array.prototype.forEach.call(buttons, function (button) { button.disabled = false; });
+            });
         }
 
         // --- Update quantity -------------------------------------------------

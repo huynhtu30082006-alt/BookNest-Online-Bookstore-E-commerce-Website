@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Route;
 
 // Storefront (placeholder until the product-browsing pages are merged)
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/books/{product}', [HomeController::class, 'show'])->name('products.show');
 
 // Registration / login (guests only)
 Route::middleware('guest')->group(function () {
