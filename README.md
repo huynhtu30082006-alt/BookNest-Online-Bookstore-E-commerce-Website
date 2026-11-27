@@ -293,12 +293,67 @@ warn about this). Prices are whole VND amounts. Laravel's `sessions` table store
 
 ---
 
-## 7. Git workflow and project coordination
+## 7. Administrator area and database
+
+**Responsible member:** Truong Ho Anh Thu
+
+**Scope:** PostgreSQL database schema & seeders · role-based admin access control · administrator dashboard & sales report ·
+category management · book catalog management · customer account management · order status & payment administration ·
+promotional coupon administration.
+
+### 7.1 How it works
+
+```
+Admin login (/login) ──▶ AdminMiddleware (role === 'admin')
+                                │
+        ┌───────────────────────┼───────────────────────┬───────────────────────┐
+        ▼                       ▼                       ▼                       ▼
+Dashboard & Report      Catalog Management      Customer Management     Order & Coupon Admin
+(DashboardController)   (Product / Category)    (CustomerController)    (AdminOrder / Coupon)
+        │                       │                       │                       │
+        ▼                       ▼                       ▼                       ▼
+PostgreSQL queries      CRUD, stock & dual      Account listing &       Status lifecycle &
+(KPIs, monthly sales)   guest/member pricing    role/status control     promo code activation
+```
+
+Key rules and modules (integrated from `feature/dashboard-report`, `feature/customer-management`, `feature/product-management`, and `feature/admin-management`):
+
+| Topic | Rule / Implementation |
+|---|---|
+| Access control | All `/admin/*` routes are protected by `auth` and `AdminMiddleware`. Only accounts with `role = 'admin'` can access the portal; regular customers or guests are blocked. |
+| Dashboard & sales report | `DashboardController` aggregates real-time KPIs (**Total Revenue**, **Total Orders**, **Total Customers**, **Total Books**), monthly revenue breakdown, and the 5 most recent orders (`resources/views/admin/dashboard/index.blade.php`). |
+| Revenue & order totals | Consistent with the `orders` table schema (`subtotal`, `discount`, `delivery_fee`), order totals are computed dynamically as `subtotal − discount + delivery_fee`. Orders with status `Cancelled` are excluded from total revenue. |
+| PostgreSQL date queries | Monthly sales aggregation uses ANSI SQL `EXTRACT(MONTH FROM created_at)` instead of MySQL-specific `MONTH()` functions to ensure full compatibility with PostgreSQL timestamps. |
+| Guest & member orders | The recent orders table and order management views resolve `$order->user->name ?? $order->guest_name`, displaying both registered member accounts and guest checkout records seamlessly. |
+| Book & category management | Admins manage categories (`CategoryController`) and books (`ProductController`), including `guest_price`, `member_price`, `stock` inventory, cover images, and `active`/`inactive` visibility. Books referenced in `order_items` are protected by foreign-key `restrict` rules. |
+| Customer management | `CustomerController` lists registered users, contact details, and order activity for account administration. |
+| Order & coupon administration | `AdminOrderController` manages order progression (`Pending → Confirmed → Shipping → Completed` or `Cancelled`) and payment status (`Unpaid`, `Paid`, `Refunded`). `AdminCouponController` creates and toggles promotional codes (`discount_value`, `min_order_value`, `is_active`). |
+
+### 7.2 Admin routes
+
+| Method & URL | Access | Purpose |
+|---|---|---|
+| `GET /admin/dashboard` | admin | Executive KPI cards, monthly sales report and 5 most recent orders |
+| `GET /admin/customers` | admin | View and manage registered customer accounts |
+| `GET /admin/products` | admin | List, create, edit and manage book catalog, pricing and stock |
+| `GET /admin/categories` | admin | List, create, edit and toggle book categories |
+| `GET /admin/orders` | admin | View all orders and update order / payment statuses |
+| `GET /admin/coupons` | admin | List, create, edit and activate/deactivate discount codes |
+
+### 7.3 Database design & seeders
+
+- **Migrations (`CODE/database/migrations/`):** Defines normalized PostgreSQL tables (`users`, `categories`, `products`, `coupons`, `orders`, `order_items`, plus Laravel `sessions` and `cache`) with foreign-key constraints and indexed lookup columns.
+- **Seeders (`CODE/database/seeders/`):** Populates initial admin (`admin@booknest.test`) and member (`lan@example.com`) accounts, 4 book categories, 12 sample books (including out-of-stock test data), and sample coupons (`WELCOME25`, `BOOK50`, `EXPIRED10`).
+- **SQL & ERD artifacts (`DATABASE/`, `DATA/`):** Stores database schema scripts, ERD documentation, and sample dataset files.
+
+---
+
+## 8. Git workflow and project coordination
 
 **Repository:** <https://github.com/huynhtu30082006-alt/BookNest-Online-Bookstore-E-commerce-Website> ·
 **Git coordinator:** Huynh Thanh Tu
 
-### 7.1 Branches and commits
+### 8.1 Branches and commits
 - `main` always contains code that installs and runs (`php artisan migrate:fresh --seed` and `php artisan test` succeed).
 - Work happens on a short-lived branch per task, named `feature/<area>-<short-name>` (for example
   `feature/customer-cart`, `feature/admin-orders`, `feature/ui-product-detail`) or `fix/<short-name>`.
@@ -307,7 +362,7 @@ warn about this). Prices are whole VND amounts. Laravel's `sessions` table store
 - Open a pull request into `main`; at least one other member reviews it, and the author runs `php artisan test` first.
 - Update your branch from `main` (`git pull origin main`) before merging, and never force-push to `main`.
 
-### 7.2 Who owns what
+### 8.2 Who owns what
 | Area | Owner | Main files |
 |---|---|---|
 | Customer flow and business logic | Huynh Thanh Tu | `app/Services`, `app/Http/Controllers` (auth, profile, cart, coupon, checkout, orders), `resources/views` (auth, profile, cart, checkout, orders), `tests/` |
@@ -317,7 +372,7 @@ warn about this). Prices are whole VND amounts. Laravel's `sessions` table store
 Shared files (`routes/web.php`, `resources/views/layouts/app.blade.php`, migrations) are changed through a pull request
 so that the other members see the change.
 
-### 7.3 What must never be committed
+### 8.3 What must never be committed
 - `CODE/.env` (personal passwords) – commit only `.env.example` with empty `APP_KEY` and `DB_PASSWORD`.
 - `CODE/vendor/` and `CODE/node_modules/` – restored with `composer install`.
 - Editor history such as the VS Code Local History folder `.history/` and IDE folders (`.idea/`, `.vscode/`).
@@ -327,7 +382,7 @@ so that the other members see the change.
 next to `CODE/` (for example `.history/`) are ignored too. The test `test_repo_git_does_not_track_secrets_dependencies_or_editor_history`
 in `CustomerFlowTest` fails if one of them is tracked.
 
-### 7.4 Before you submit or merge
+### 8.4 Before you submit or merge
 1. `cd CODE && composer install && php artisan migrate:fresh --seed` works on a clean PostgreSQL database.
 2. `php artisan test` passes.
 3. `README.md` and `DOCUMENTATION/` match the code (routes, rules, demo accounts).
