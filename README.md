@@ -301,10 +301,16 @@ warn about this). Prices are whole VND amounts. Laravel's `sessions` table store
 category management · book catalog management · customer account management · order status & payment administration ·
 promotional coupon administration.
 
+Also included: stock restoration when an administrator cancels an order, delete protection for products linked to existing orders,
+and guest/member order attribution across admin views.
+
+Not part of this scope (owned by teammates): storefront product browsing pages (home, category filter, search, book detail),
+customer cart/checkout/tracking flows, and storefront AJAX interactions.
+
 ### 7.1 How it works
 
 ```
-Admin login (/login) ──▶ AdminMiddleware (role === 'admin')
+Admin login (/login) ──▶ Auth & AdminMiddleware (role === 'admin')
                                 │
         ┌───────────────────────┼───────────────────────┬───────────────────────┐
         ▼                       ▼                       ▼                       ▼
@@ -312,40 +318,59 @@ Dashboard & Report      Catalog Management      Customer Management     Order & 
 (DashboardController)   (Product / Category)    (CustomerController)    (AdminOrder / Coupon)
         │                       │                       │                       │
         ▼                       ▼                       ▼                       ▼
-PostgreSQL queries      CRUD, stock & dual      Account listing &       Status lifecycle &
-(KPIs, monthly sales)   guest/member pricing    role/status control     promo code activation
+PostgreSQL queries      CRUD, dual pricing &    Account listing &       Status lifecycle, stock
+(KPIs, monthly sales)   stock / image control   order history lookup    restore & promo rules
 ```
 
-Key rules and modules (integrated from `feature/dashboard-report`, `feature/customer-management`, `feature/product-management`, and `feature/admin-management`):
+Key rules (integrated from `feature/dashboard-report`, `feature/customer-management`, `feature/product-management`, and `feature/admin-management`):
 
-| Topic | Rule / Implementation |
+| Topic | Rule |
 |---|---|
-| Access control | All `/admin/*` routes are protected by `auth` and `AdminMiddleware`. Only accounts with `role = 'admin'` can access the portal; regular customers or guests are blocked. |
-| Dashboard & sales report | `DashboardController` aggregates real-time KPIs (**Total Revenue**, **Total Orders**, **Total Customers**, **Total Books**), monthly revenue breakdown, and the 5 most recent orders (`resources/views/admin/dashboard/index.blade.php`). |
-| Revenue & order totals | Consistent with the `orders` table schema (`subtotal`, `discount`, `delivery_fee`), order totals are computed dynamically as `subtotal − discount + delivery_fee`. Orders with status `Cancelled` are excluded from total revenue. |
-| PostgreSQL date queries | Monthly sales aggregation uses ANSI SQL `EXTRACT(MONTH FROM created_at)` instead of MySQL-specific `MONTH()` functions to ensure full compatibility with PostgreSQL timestamps. |
-| Guest & member orders | The recent orders table and order management views resolve `$order->user->name ?? $order->guest_name`, displaying both registered member accounts and guest checkout records seamlessly. |
-| Book & category management | Admins manage categories (`CategoryController`) and books (`ProductController`), including `guest_price`, `member_price`, `stock` inventory, cover images, and `active`/`inactive` visibility. Books referenced in `order_items` are protected by foreign-key `restrict` rules. |
-| Customer management | `CustomerController` lists registered users, contact details, and order activity for account administration. |
-| Order & coupon administration | `AdminOrderController` manages order progression (`Pending → Confirmed → Shipping → Completed` or `Cancelled`) and payment status (`Unpaid`, `Paid`, `Refunded`). `AdminCouponController` creates and toggles promotional codes (`discount_value`, `min_order_value`, `is_active`). |
+| Access control | All `/admin/*` endpoints are grouped under `web`, `auth`, and `AdminMiddleware`. Only users with `role = 'admin'` can enter the admin portal; guests are redirected to `/login` and regular `customer` accounts receive a 403 Forbidden response. |
+| Dashboard KPIs | `DashboardController` computes four real-time summary cards (`resources/views/admin/dashboard/index.blade.php`): **Total Revenue** (sum of non-cancelled orders), **Total Orders** (all recorded orders), **Total Customers** (users with `role = 'customer'`), and **Total Books** (total catalog titles). |
+| Revenue & total formula | Consistent with the `orders` schema (`subtotal`, `discount`, `delivery_fee`, without a stored `total` column), every order total and revenue metric is calculated dynamically as `subtotal − discount + delivery_fee`. Orders in `Cancelled` status are excluded from revenue. |
+| PostgreSQL date aggregation | Monthly sales reports use ANSI SQL `EXTRACT(MONTH FROM created_at)` instead of MySQL-specific `MONTH()` functions so queries execute natively against PostgreSQL timestamp columns. |
+| Recent orders & attribution | The dashboard displays the 5 most recent orders ordered by `created_at DESC`, resolving customer identity via `$order->user->name ?? $order->guest_name` so both registered members and guest checkouts render properly. |
+| Category management | `CategoryController` provides CRUD operations (`name`, `slug`, `description`, `is_active`). Deactivating a category hides its books from the storefront without breaking historical order records. |
+| Book catalog management | `ProductController` manages book listings (`category_id`, `name`, `author`, `description`, `guest_price`, `member_price`, `stock`, `image_url`, `status`). Books referenced in `order_items` are protected by foreign-key `restrict` rules and cannot be hard-deleted; admins deactivate them (`status = inactive`) instead. |
+| Customer management | `CustomerController` lists registered customer accounts with contact details (`name`, `email`, normalized `+84` `phone`, `address`), registration date, and order count/history overview. |
+| Order administration | `AdminOrderController` lists all member and guest orders, inspects line items (`order_items` unit price snapshots), and updates order lifecycle status (`Pending → Confirmed → Shipping → Completed`, or `Cancelled`) and `payment_status` (`Unpaid`, `Paid`, `Refunded`). Cancelling a non-cancelled order restores item quantities back to `products.stock`. |
+| Coupon administration | `AdminCouponController` manages promotional discount codes (`code`, `discount_value`, `min_order_value`, `is_active`), allowing admins to create new vouchers or toggle active status without deleting codes already linked to past orders. |
+| Validation & feedback | All admin create/update forms enforce server-side validation (required fields, positive VND prices, non-negative stock, unique slugs/coupon codes) and return clear flash notifications on success or constraint errors. |
 
-### 7.2 Admin routes
+### 7.2 Routes
 
 | Method & URL | Access | Purpose |
 |---|---|---|
-| `GET /admin/dashboard` | admin | Executive KPI cards, monthly sales report and 5 most recent orders |
-| `GET /admin/customers` | admin | View and manage registered customer accounts |
-| `GET /admin/products` | admin | List, create, edit and manage book catalog, pricing and stock |
-| `GET /admin/categories` | admin | List, create, edit and toggle book categories |
-| `GET /admin/orders` | admin | View all orders and update order / payment statuses |
-| `GET /admin/coupons` | admin | List, create, edit and activate/deactivate discount codes |
+| `GET /admin/dashboard` | admin | Executive KPI cards, monthly revenue summary and 5 most recent orders |
+| `GET /admin/customers` | admin | Registered customer directory and account details |
+| `GET/POST /admin/products`, `GET/PUT/DELETE /admin/products/{product}` | admin | List, create, edit and manage books, dual pricing and stock |
+| `GET/POST /admin/categories`, `GET/PUT/DELETE /admin/categories/{category}` | admin | List, create, edit and toggle book categories |
+| `GET /admin/orders`, `GET/PATCH /admin/orders/{order}` | admin | View all orders, inspect items and update order / payment status |
+| `GET/POST /admin/coupons`, `GET/PUT/DELETE /admin/coupons/{coupon}` | admin | List, create, edit and activate/deactivate discount codes |
 
-### 7.3 Database design & seeders
+### 7.3 Database schema and seeders
 
-- **Migrations (`CODE/database/migrations/`):** Defines normalized PostgreSQL tables (`users`, `categories`, `products`, `coupons`, `orders`, `order_items`, plus Laravel `sessions` and `cache`) with foreign-key constraints and indexed lookup columns.
-- **Seeders (`CODE/database/seeders/`):** Populates initial admin (`admin@booknest.test`) and member (`lan@example.com`) accounts, 4 book categories, 12 sample books (including out-of-stock test data), and sample coupons (`WELCOME25`, `BOOK50`, `EXPIRED10`).
-- **SQL & ERD artifacts (`DATABASE/`, `DATA/`):** Stores database schema scripts, ERD documentation, and sample dataset files.
+| Table | Responsibility & Design Details |
+|---|---|
+| `users` | Stores `customer` and `admin` accounts (`role` enum/string, unique `email`, normalized `+84` `phone`, optional `address`). |
+| `categories` | Organizes books into classifications with unique `slug` and `is_active` visibility flag. |
+| `products` | Stores book metadata, `guest_price` and `member_price` (whole VND), `stock` inventory, `image_url`, and `status` (`active` / `inactive`), linked via `category_id`. |
+| `coupons` | Stores discount codes (`code` unique, `discount_value`, `min_order_value`, `is_active`). |
+| `orders` | Stores nullable `user_id` and `coupon_id`, `guest_*` delivery snapshot fields, `subtotal`, `discount`, `delivery_fee`, `status`, `payment_method`, and `payment_status`. |
+| `order_items` | Pivot table linking `orders` and `products` (`onDelete('restrict')`) with `quantity` and purchase-time unit `price`. |
 
+- **Migrations (`CODE/database/migrations/`):** Builds the full PostgreSQL schema along with Laravel `sessions`, `cache`, and `jobs` tables.
+- **Seeders (`CODE/database/seeders/`):** `DatabaseSeeder` invokes `UserSeeder`, `CategorySeeder`, `ProductSeeder`, and `CouponSeeder` to populate demo accounts (`admin@booknest.test`, `lan@example.com`), 4 categories, 12 books (including an out-of-stock book for boundary testing), and 3 coupons (`WELCOME25`, `BOOK50`, `EXPIRED10`).
+- **Database artifacts (`DATABASE/`, `DATA/`):** Contains SQL schema scripts, ERD design files, and sample dataset records.
+
+### 7.4 Integration notes for teammates
+- **Customer flow owner:** Admin status updates on `orders.status` and `orders.payment_status` reflect immediately on `/orders` and `/orders/track`. Any order cancelled from the admin panel restores `products.stock` consistently with `OrderService::cancel()`.
+- **UI owner:** Admin views extend the shared layout (`layouts/app.blade.php`) and reuse Bootstrap 5 utility classes and flash partials (`partials/flash.blade.php`).
+
+### 7.5 Known limitations
+- Sales analytics currently aggregate monthly totals from `orders` in SQL tables without external charting libraries or PDF/Excel export buttons.
+- Product deletion is blocked by database `restrict` constraints once a book appears in `order_items`; administrators deactivate (`inactive`) discontinued titles instead.
 ---
 
 ## 8. Git workflow and project coordination
